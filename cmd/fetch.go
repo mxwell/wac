@@ -16,37 +16,63 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/PuerkitoBio/goquery"
+	"github.com/mxwell/wac/model"
 	"github.com/spf13/cobra"
 )
 
-// fetchCmd represents the fetch command
-var fetchCmd = &cobra.Command{
-	Use:   "fetch",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+func readFile(path string) (*goquery.Document, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open file: %s", err)
+	}
+	return goquery.NewDocumentFromReader(f)
+}
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+var fetchCmd = &cobra.Command{
+	Use:   "fetch [arg]",
+	Short: "TODO",
+	Long:  `TODO`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("fetch called")
+		if len(args) != 1 {
+			fmt.Println("1 arg is required")
+			return
+		}
+		doc, err := readFile(args[0])
+		if err != nil {
+			fmt.Printf("ERROR %s\n", err)
+			return
+		}
+		tasks := make(map[string]model.Task)
+		doc.Find("table tbody tr").Each(func(i int, s *goquery.Selection) {
+			link := s.Find("td.center a.linkwrapper")
+			href, ok := link.Attr("href")
+			if ok {
+				fmt.Printf("%s - %s\n", link.Text(), href)
+				tasks[link.Text()] = model.Task{href, link.Text(), link.Text()}
+			}
+		})
+		contest := model.Contest{"http://example.com", "Example Contest", tasks}
+		err = model.SaveContest(&contest, "bb.json")
+		if err != nil {
+			fmt.Printf("ERROR %s\n", err)
+			return
+		}
+		c, err := model.LoadContest("aa.json")
+		if err != nil {
+			fmt.Printf("ERROR %s\n", err)
+			return
+		}
+		err = model.SaveContest(c, "cc.json")
+		if err != nil {
+			fmt.Printf("ERROR %s\n", err)
+			return
+		}
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(fetchCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// fetchCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// fetchCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }
