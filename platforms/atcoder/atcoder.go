@@ -8,7 +8,7 @@ import (
 	"github.com/mxwell/wac/model"
 )
 
-func FetchContest(url string) (*model.Contest, error) {
+func FetchContest(url string, root_dirname string) (*model.Contest, error) {
 	url, err := trimUrl(url)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func FetchContest(url string) (*model.Contest, error) {
 			fmt.Printf("unable to find token of task %d\n", i)
 			return
 		}
-		token := tokenElement.Text()
+		token := strings.ToLower(tokenElement.Text())
 		href, ok := tokenElement.Attr("href")
 		if !ok {
 			fmt.Printf("unable to extract link to task %d\n", i)
@@ -53,7 +53,7 @@ func FetchContest(url string) (*model.Contest, error) {
 		name := nameElement.Text()
 		tasks[token] = model.Task{url + href, name, token}
 	})
-	return &model.Contest{url, title, tasks}, nil
+	return &model.Contest{url, title, tasks, root_dirname}, nil
 }
 
 const SchemeHttp = "http://"

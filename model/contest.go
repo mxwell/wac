@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"io/ioutil"
+	"path/filepath"
 )
 
 type Task struct {
@@ -12,18 +13,24 @@ type Task struct {
 }
 
 type Contest struct {
-	Link  string
-	Name  string
-	Tasks map[string]Task
+	Link    string
+	Name    string
+	Tasks   map[string]Task
+	RootDir string
 }
 
-func SaveContest(contest *Contest, path string) error {
+const root_file = ".contest.json"
+
+func GetRootFile(contest *Contest) string {
+	return filepath.Join(contest.RootDir, root_file)
+}
+
+func SaveContest(contest *Contest) error {
 	b, err := json.Marshal(*contest)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(path, b, 0644)
-	return err
+	return ioutil.WriteFile(GetRootFile(contest), b, 0644)
 }
 
 func LoadContest(path string) (*Contest, error) {
