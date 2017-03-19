@@ -8,7 +8,19 @@ import (
 	"github.com/mxwell/wac/model"
 )
 
-func FetchContest(url string, root_dirname string) (*model.Contest, error) {
+type AtCoder struct {
+}
+
+func InitAtCoder() model.Platform {
+	return AtCoder{}
+}
+
+func (a AtCoder) ValidUrl(url string) bool {
+	_, err := trimUrl(url)
+	return err == nil
+}
+
+func (a AtCoder) GetContest(url string, root_dirname string) (*model.Contest, error) {
 	url, err := trimUrl(url)
 	if err != nil {
 		return nil, err
@@ -54,6 +66,10 @@ func FetchContest(url string, root_dirname string) (*model.Contest, error) {
 		tasks[token] = model.Task{url + href, name, token}
 	})
 	return &model.Contest{url, title, tasks, root_dirname}, nil
+}
+
+func (a AtCoder) GetTests(task *model.Task) ([]model.Test, error) {
+	return nil, fmt.Errorf("not impl.")
 }
 
 const SchemeHttp = "http://"

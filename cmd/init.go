@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 
 	"github.com/mxwell/wac/model"
-	"github.com/mxwell/wac/platforms/atcoder"
+	"github.com/mxwell/wac/platforms"
 	"github.com/spf13/cobra"
 )
 
@@ -84,15 +84,12 @@ Directory is created if it doesn't exist.`,
 			return
 		}
 
-		fmt.Println(root_dirname)
-
-		/*
-		 * TODO there should be a filter collection, to which platform handlers should register
-		 * Handlers receives an URL one after another. If a handler is able to process the URL,
-		 * it processes it and returns *Contest. Otherwise, it returns nil and the next
-		 * handler proceeds.
-		 */
-		contest, err := atcoder.FetchContest(args[0], root_dirname)
+		platform := platforms.FindPlatform(args[0])
+		if platform == nil {
+			fmt.Printf("ERROR unable to find platform for url %s\n", args[0])
+			return
+		}
+		contest, err := platform.GetContest(args[0], root_dirname)
 		if err != nil {
 			fmt.Printf("ERROR can't fetch contest: %s\n", err)
 			return
@@ -108,15 +105,4 @@ Directory is created if it doesn't exist.`,
 
 func init() {
 	RootCmd.AddCommand(initCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

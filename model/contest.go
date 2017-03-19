@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 )
 
+type Test struct {
+	Input  string
+	Output string
+}
+
 type Task struct {
 	Link  string
 	Name  string
@@ -17,6 +22,12 @@ type Contest struct {
 	Name    string
 	Tasks   map[string]Task
 	RootDir string
+}
+
+type Platform interface {
+	ValidUrl(url string) bool
+	GetContest(url string, root_dirname string) (*Contest, error)
+	GetTests(task *Task) ([]Test, error)
 }
 
 const root_file = ".contest.json"
