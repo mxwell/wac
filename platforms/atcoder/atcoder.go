@@ -2,6 +2,8 @@ package atcoder
 
 import (
 	"fmt"
+	"log"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -68,8 +70,83 @@ func (a AtCoder) GetContest(url string, root_dirname string) (*model.Contest, er
 	return &model.Contest{url, title, tasks, root_dirname}, nil
 }
 
+func contains(arr *[]int, value int) bool {
+	for _, e := range *arr {
+		if e == value {
+			return true
+		}
+	}
+	return false
+}
+
 func (a AtCoder) GetTests(task *model.Task) ([]model.Test, error) {
-	return nil, fmt.Errorf("not impl.")
+	doc, err := goquery.NewDocument(task.Link)
+	if err != nil {
+		return nil, err
+	}
+	statementElement := doc.Find("#task-statement")
+	if statementElement.Length() != 1 {
+		return nil, fmt.Errorf("can't detect task-statement uniquely: %d item(s) found", statementElement.Length())
+	}
+	enSpanElement := statementElement.Find("span.lang-en")
+	if enSpanElement.Length() != 1 {
+		return nil, fmt.Errorf("can't detect span in English uniquely")
+	}
+
+	sampleInputs := make(map[int]string)
+	sampleOutputs := make(map[int]string)
+	/* add sample IDs in order of appearance to restore the order later */
+	var idOrder []int
+
+	enSpanElement.Find("div.part").Each(func(i int, s *goquery.Selection) {
+		headerElement := s.Find("section h3")
+		if headerElement.Length() != 1 {
+			return
+		}
+		preElement := s.Find("section pre")
+		if preElement.Length() != 1 {
+			return
+		}
+		header := headerElement.Text()
+		pre := preElement.Text()
+		if strings.HasPrefix(header, "Sample Input ") {
+			if id, err := strconv.Atoi(strings.TrimPrefix(header, "Sample Input ")); err == nil {
+				sampleInputs[id] = pre
+				if !contains(&idOrder, id) {
+					idOrder = append(idOrder, id)
+				}
+			} else {
+				log.Printf("WARN can't parse sample id from header '%s'\n", header)
+			}
+		} else if strings.HasPrefix(header, "Sample Output ") {
+			if id, err := strconv.Atoi(strings.TrimPrefix(header, "Sample Output ")); err == nil {
+				sampleOutputs[id] = pre
+				if !contains(&idOrder, id) {
+					idOrder = append(idOrder, id)
+				}
+			} else {
+				log.Printf("WARN can't parse sample id from header '%s'\n", header)
+			}
+		}
+	})
+
+	var result []model.Test
+	for _, id := range idOrder {
+		input := sampleInputs[id]
+		output, ok := sampleOutputs[id]
+		if !ok {
+			log.Printf("WARN no output for sample %d\n", id)
+			continue
+		}
+		token := "sample" + strconv.Itoa(id)
+		result = append(result, model.Test{token, input, output})
+	}
+
+	if len(result) == 0 {
+		return nil, fmt.Errorf("tests are not found")
+	}
+
+	return result, nil
 }
 
 const SchemeHttp = "http://"
