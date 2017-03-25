@@ -62,6 +62,7 @@ func LocateContest() (*Contest, error) {
 	if err != nil {
 		return nil, err
 	}
+	/* check working dir and all its parents bottom-up until root file is found */
 	dir := wd
 	for len(dir) > 0 {
 		/* check if root file exists inside dir */
