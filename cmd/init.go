@@ -97,6 +97,7 @@ Directory is created if it doesn't exist.`,
 
 		if err := initContestDirectory(contest); err != nil {
 			fmt.Printf("ERROR can't init contest directory: %s\n", err)
+			return
 		}
 
 		fmt.Printf("Root directory: %s\n", contest.RootDir)
