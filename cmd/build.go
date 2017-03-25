@@ -119,17 +119,20 @@ var buildCmd = &cobra.Command{
 		if command != nil {
 			command.Stdout = &stdout
 			command.Stderr = &stderr
-			if err := command.Run(); err != nil {
-				fmt.Printf("ERROR Build failed:\n<stdout>\n%q\n<stderr>\n%q\n", stdout.String(), stderr.String())
-				return
-			}
+			err = command.Run()
 		}
-		fmt.Println("OK")
+		if err != nil {
+			fmt.Printf("ERROR Build failed: %s\n", err)
+		} else {
+			fmt.Println("OK")
+		}
 		if stdout.Len() > 0 {
-			fmt.Printf("<stdout>\n%q\n", stdout.String())
+			fmt.Println("<stdout>")
+			stdout.WriteTo(os.Stdout)
 		}
 		if stderr.Len() > 0 {
-			fmt.Printf("<stderr>\n%q\n", stderr.String())
+			fmt.Println("<stderr>")
+			stderr.WriteTo(os.Stdout)
 		}
 	},
 }
