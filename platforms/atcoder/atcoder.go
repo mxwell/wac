@@ -65,7 +65,7 @@ func (a AtCoder) GetContest(url string, root_dirname string) (*model.Contest, er
 			return
 		}
 		name := nameElement.Text()
-		tasks[token] = model.Task{url + href, name, token}
+		tasks[token] = model.Task{url + href, name, token, make([]string, 0)}
 	})
 	return &model.Contest{url, title, tasks, root_dirname}, nil
 }

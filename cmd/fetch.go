@@ -33,7 +33,6 @@ func determineCurrentTask(contest *model.Contest) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("can't determine workdir: %s", err)
 	}
-	log.Printf("workdir: %s\n", workdir)
 	for token, _ := range contest.Tasks {
 		path := filepath.Join(contest.RootDir, token)
 		if path == workdir {
@@ -56,6 +55,17 @@ func saveStringToFile(s *string, path string) error {
 	return nil
 }
 
+func contains(arr *[]string, value string) bool {
+	for _, e := range *arr {
+		if e == value {
+			return true
+		}
+	}
+	return false
+}
+
+// The function fetches samples from a platform, saves them into task directory
+// and adds info on the samples into contest struct
 func fetchForTask(platform model.Platform, contest *model.Contest, token string) error {
 	task_path := filepath.Join(contest.RootDir, token)
 	if _, err := os.Stat(task_path); os.IsNotExist(err) {
@@ -75,6 +85,11 @@ func fetchForTask(platform model.Platform, contest *model.Contest, token string)
 	}
 	for _, test := range tests {
 		sample_path := filepath.Join(task_path, test.Token)
+		if contains(&task.TestTokens, test.Token) {
+			log.Printf("Test '%s' was already present, re-writing...", test.Token)
+		} else {
+			task.TestTokens = append(task.TestTokens, test.Token)
+		}
 		input_path := sample_path + ".in"
 		output_path := sample_path + ".out"
 		err = saveStringToFile(&test.Input, input_path)
@@ -87,6 +102,7 @@ func fetchForTask(platform model.Platform, contest *model.Contest, token string)
 		}
 		log.Printf("%s saved to %s and %s\n", test.Token, filepath.Base(input_path), filepath.Base(output_path))
 	}
+	contest.Tasks[token] = task
 	return nil
 }
 
@@ -128,6 +144,11 @@ var fetchCmd = &cobra.Command{
 			if err != nil {
 				log.Fatalf("ERROR can't fetch task: %s\n", err)
 			}
+		}
+
+		err = model.SaveContest(contest)
+		if err != nil {
+			log.Fatalf("ERROR failed to save contest metadata.")
 		}
 	},
 }

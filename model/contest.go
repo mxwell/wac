@@ -15,9 +15,10 @@ type Test struct {
 }
 
 type Task struct {
-	Link  string
-	Name  string
-	Token string
+	Link       string
+	Name       string
+	Token      string
+	TestTokens []string
 }
 
 type Contest struct {
