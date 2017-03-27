@@ -28,7 +28,7 @@ var cfgFile string
 var RootCmd = &cobra.Command{
 	Use:   "wac",
 	Short: "Contestant helper",
-	Long: `WAC is a CLI tool that helps contestants of programming contestants
+	Long: `WAC is a CLI tool that helps contestants of programming contests
 to write, build and test code of solutions.`,
 }
 
