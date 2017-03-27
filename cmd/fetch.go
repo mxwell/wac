@@ -28,20 +28,6 @@ import (
 
 var fetchAll bool
 
-func determineCurrentTask(contest *model.Contest) (string, error) {
-	workdir, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("can't determine workdir: %s", err)
-	}
-	for token, _ := range contest.Tasks {
-		path := filepath.Join(contest.RootDir, token)
-		if path == workdir {
-			return token, nil
-		}
-	}
-	return "", fmt.Errorf("workdir %s doesn't match to any task in contest", workdir)
-}
-
 func saveStringToFile(s *string, path string) error {
 	f, err := os.Create(path)
 	if err != nil {
@@ -136,7 +122,7 @@ var fetchCmd = &cobra.Command{
 				}
 			}
 		} else {
-			token, err := determineCurrentTask(contest)
+			token, err := model.DetermineCurrentTask(contest)
 			if err != nil {
 				log.Fatalf("ERROR can't determine current task: %s\n", err)
 			}

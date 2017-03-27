@@ -1,7 +1,7 @@
 {
   "templates_dir": "/home/murat/.config/wac/templates",
   "default_template": "gcc",
-  "solution_name": "main",
+  "solution_name": "./main",
   "extensions": {
     "c++11": "cpp",
     "python3": "py"

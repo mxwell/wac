@@ -79,3 +79,17 @@ func LocateContest() (*Contest, error) {
 	}
 	return nil, fmt.Errorf("unable to locate contest metadata in the current directory %s or its parents", wd)
 }
+
+func DetermineCurrentTask(contest *Contest) (string, error) {
+	workdir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("can't determine workdir: %s", err)
+	}
+	for token, _ := range contest.Tasks {
+		path := filepath.Join(contest.RootDir, token)
+		if path == workdir {
+			return token, nil
+		}
+	}
+	return "", fmt.Errorf("workdir %s doesn't match to any task in contest", workdir)
+}
