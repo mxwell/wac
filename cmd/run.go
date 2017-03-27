@@ -187,7 +187,7 @@ Set of test cases could be specified in command arguments. If no arguments are g
 			} else {
 				msg = "Ok"
 			}
-			fmt.Printf("%s -- %dms\n", msg, int(outc.exec_time / 1000000))
+			fmt.Printf("%s -- %dms\n", msg, int(outc.exec_time/1000000))
 			if outc.output_differs {
 				break
 			}
