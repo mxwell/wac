@@ -23,6 +23,7 @@ import (
 
 	"github.com/mxwell/wac/model"
 	"github.com/mxwell/wac/platforms"
+	"github.com/mxwell/wac/util"
 	"github.com/spf13/cobra"
 )
 
@@ -39,15 +40,6 @@ func saveStringToFile(s *string, path string) error {
 		return fmt.Errorf("error while writing to file '%s': %s", path, err)
 	}
 	return nil
-}
-
-func contains(arr *[]string, value string) bool {
-	for _, e := range *arr {
-		if e == value {
-			return true
-		}
-	}
-	return false
 }
 
 // The function fetches samples from a platform, saves them into task directory
@@ -71,7 +63,7 @@ func fetchForTask(platform model.Platform, contest *model.Contest, token string)
 	}
 	for _, test := range tests {
 		sample_path := filepath.Join(task_path, test.Token)
-		if contains(&task.TestTokens, test.Token) {
+		if util.ContainsString(&task.TestTokens, test.Token) {
 			log.Printf("Test '%s' was already present, re-writing...", test.Token)
 		} else {
 			task.TestTokens = append(task.TestTokens, test.Token)

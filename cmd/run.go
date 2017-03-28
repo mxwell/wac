@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/mxwell/wac/model"
+	"github.com/mxwell/wac/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -155,10 +156,11 @@ func runSingleTest(taskDir string, testToken string) (*Outcome, error) {
 }
 
 var runCmd = &cobra.Command{
-	Use:   "run",
+	Use:   "run [test tokens]",
 	Short: "Run built solution on test cases",
 	Long: `Run built solution on test cases until an error happens or force to go on through all test cases.
-Set of test cases could be specified in command arguments. If no arguments are given, then all available tests are used.`,
+Set of test cases could be specified in command arguments as test tokens separated by spaces.
+If no arguments are given, then all available tests are used.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(SolutionCommand) == 0 {
 			SolutionCommand = viper.GetString("solution_name")
@@ -180,6 +182,9 @@ Set of test cases could be specified in command arguments. If no arguments are g
 			return
 		}
 		for _, testToken := range task.TestTokens {
+			if len(args) > 0 && !util.ContainsString(&args, testToken) {
+				continue
+			}
 			fmt.Printf("[%s] ... ", testToken)
 			outc, err := runSingleTest(filepath.Join(contest.RootDir, taskToken), testToken)
 			if err != nil {
