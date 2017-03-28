@@ -81,6 +81,13 @@ var infoCmd = &cobra.Command{
 					token_s = "  [" + token + "]"
 				}
 				fmt.Printf("\n%s %s -- %s\n\tpath:  %s\n", token_s, task.Name, task.Link, rel_path)
+				if len(task.TestTokens) > 0 {
+					fmt.Printf("\ttests:")
+					for _, testToken := range task.TestTokens {
+						fmt.Printf(" %s", testToken)
+					}
+					fmt.Println()
+				}
 			}
 		}
 	},
