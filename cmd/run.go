@@ -28,6 +28,7 @@ import (
 
 	"github.com/mxwell/wac/model"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type Outcome struct {
@@ -159,6 +160,9 @@ var runCmd = &cobra.Command{
 	Long: `Run built solution on test cases until an error happens or force to go on through all test cases.
 Set of test cases could be specified in command arguments. If no arguments are given, then all available tests are used.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(SolutionCommand) == 0 {
+			SolutionCommand = viper.GetString("solution_name")
+		}
 		contest, err := model.LocateContest()
 		if err != nil {
 			log.Fatalf("ERROR %s\n", err)
@@ -196,6 +200,6 @@ Set of test cases could be specified in command arguments. If no arguments are g
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&SolutionCommand, "command", "c", "./main", "Command to execute solution")
+	runCmd.Flags().StringVarP(&SolutionCommand, "command", "c", "", "Command to execute solution (default is to set by config)")
 	RootCmd.AddCommand(runCmd)
 }
