@@ -22,7 +22,7 @@ func (a AtCoder) ValidUrl(url string) bool {
 	return err == nil
 }
 
-func (a AtCoder) GetContest(url string, root_dirname string) (*model.Contest, error) {
+func (a AtCoder) GetContest(url string, rootDirName string) (*model.Contest, error) {
 	url, err := trimUrl(url)
 	if err != nil {
 		return nil, err
@@ -40,34 +40,34 @@ func (a AtCoder) GetContest(url string, root_dirname string) (*model.Contest, er
 	doc.Find("table tbody tr").Each(func(i int, s *goquery.Selection) {
 		column := s.Find("td.center")
 		if column.Length() == 0 {
-			fmt.Printf("unable to parse task %d\n", i)
+			log.Printf("WARN unable to parse task %d\n", i)
 			return
 		}
 		tokenElement := column.Find("a.linkwrapper")
 		if tokenElement.Length() != 1 {
-			fmt.Printf("unable to find token of task %d\n", i)
+			log.Printf("WARN unable to find token of task %d\n", i)
 			return
 		}
 		token := strings.ToLower(tokenElement.Text())
 		href, ok := tokenElement.Attr("href")
 		if !ok {
-			fmt.Printf("unable to extract link to task %d\n", i)
+			log.Printf("WARN unable to extract link to task %d\n", i)
 			return
 		}
 		column = column.Next()
 		if column.Length() == 0 {
-			fmt.Printf("unable to parse task %d\n", i)
+			log.Printf("WARN unable to parse task %d\n", i)
 			return
 		}
 		nameElement := column.Find("a.linkwrapper")
 		if nameElement.Length() != 1 {
-			fmt.Printf("unable to find name of task %d\n", i)
+			log.Printf("WARN unable to find name of task %d\n", i)
 			return
 		}
 		name := nameElement.Text()
 		tasks[token] = model.Task{url + href, name, token, make([]string, 0)}
 	})
-	return &model.Contest{url, title, tasks, root_dirname}, nil
+	return &model.Contest{url, title, tasks, rootDirName}, nil
 }
 
 func contains(arr *[]int, value int) bool {
