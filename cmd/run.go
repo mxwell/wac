@@ -47,10 +47,10 @@ var TheMethod *ExecMethod
 var SolutionName string
 
 func readExecConfig() {
-	methods := viper.GetStringMap("exec_methods")
+	methods := viper.GetStringMap("RunMethods")
 	for name, _ := range methods {
-		subtree := viper.Sub("exec_methods." + name)
-		command := subtree.GetString("command")
+		subtree := viper.Sub("RunMethods." + name)
+		command := subtree.GetString("Command")
 		ExecMethodByName[name] = &ExecMethod{command}
 	}
 }
@@ -181,14 +181,14 @@ If no arguments are given, then all available tests are used.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readExecConfig()
 		if len(ExecMethodName) == 0 {
-			ExecMethodName = viper.GetString("default_exec_method")
+			ExecMethodName = viper.GetString("DefaultRunMethod")
 		}
 		var ok bool
 		if TheMethod, ok = ExecMethodByName[ExecMethodName]; !ok {
 			log.Fatalf("ERROR exec method '%s' not found in config\n", ExecMethodName)
 		}
 		if len(SolutionName) == 0 {
-			SolutionName = viper.GetString("solution_name")
+			SolutionName = viper.GetString("SolutionName")
 		}
 		contest, err := model.LocateContest()
 		if err != nil {
@@ -230,7 +230,7 @@ If no arguments are given, then all available tests are used.`,
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name (default is set by config as default_exec_method)")
-	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name (default is set by config as solution_name)")
+	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name (default is set by config as DefaultRunMethod)")
+	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name (default is set by config as SolutionName)")
 	RootCmd.AddCommand(runCmd)
 }

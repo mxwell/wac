@@ -41,21 +41,21 @@ var LanguageByName = map[string]*Language{}
 var MethodByName = map[string]*BuildMethod{}
 
 func readBuildMethod(name string) *BuildMethod {
-	subtree := viper.Sub("build_methods." + name)
-	langName := subtree.GetString("language")
+	subtree := viper.Sub("BuildMethods." + name)
+	langName := subtree.GetString("Language")
 	language, ok := LanguageByName[langName]
 	if !ok {
 		panic(fmt.Errorf("Bad config: build method '%s' uses unknown language '%s'", name, langName))
 	}
-	return &BuildMethod{language, subtree.GetString("command")}
+	return &BuildMethod{language, subtree.GetString("Command")}
 }
 
 func readConfig() {
-	languages := viper.GetStringMapString("extensions")
+	languages := viper.GetStringMapString("Extensions")
 	for name, ext := range languages {
 		LanguageByName[name] = &Language{name, ext}
 	}
-	methods := viper.GetStringMap("build_methods")
+	methods := viper.GetStringMap("BuildMethods")
 	for name, _ := range methods {
 		MethodByName[name] = readBuildMethod(name)
 	}
@@ -95,7 +95,7 @@ var buildCmd = &cobra.Command{
 	Long:  `Build solution from a source file into an executable using [build method], if applicable`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readConfig()
-		methodName := viper.GetString("default_build_method")
+		methodName := viper.GetString("DefaultBuildMethod")
 		if len(args) == 1 {
 			methodName = args[0]
 		}
@@ -105,7 +105,7 @@ var buildCmd = &cobra.Command{
 			return
 		}
 		if len(OutputName) == 0 {
-			OutputName = viper.GetString("solution_name")
+			OutputName = viper.GetString("SolutionName")
 		}
 		input, err := getInput(method)
 		if err != nil {
@@ -142,6 +142,6 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	buildCmd.Flags().StringVarP(&InputName, "input", "i", "main.*", "Build input file")
-	buildCmd.Flags().StringVarP(&OutputName, "output", "o", "", "Build output file (default is set by config as solution_name)")
+	buildCmd.Flags().StringVarP(&OutputName, "output", "o", "", "Build output file (default is set by config as SolutionName)")
 	RootCmd.AddCommand(buildCmd)
 }

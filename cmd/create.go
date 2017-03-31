@@ -51,7 +51,7 @@ func listTemplates(dirpath string) ([]Template, error) {
 }
 
 func findTemplate(name string) (Template, error) {
-	templates, err := listTemplates(viper.GetString("templates_dir"))
+	templates, err := listTemplates(viper.GetString("TemplatesDir"))
 	if err != nil {
 		return Template{}, err
 	}
@@ -75,7 +75,7 @@ func checkDestination(template Template, destination string) (string, error) {
 }
 
 func copyTemplate(template Template, destination string) error {
-	source := viper.GetString("templates_dir") + "/" + fullName(template)
+	source := viper.GetString("TemplatesDir") + "/" + fullName(template)
 
 	input, err := os.Open(source)
 	if err != nil {
@@ -106,7 +106,7 @@ var createCmd = &cobra.Command{
 	Short: "Copy code template into current directory",
 	Long:  `Copy a code template [template name into the current directory`,
 	Run: func(cmd *cobra.Command, args []string) {
-		template_name := viper.GetString("default_template")
+		template_name := viper.GetString("DefaultTemplate")
 		if len(args) == 1 {
 			template_name = args[0]
 		}

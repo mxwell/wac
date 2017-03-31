@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mxwell/wac/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -56,18 +57,17 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	util.CheckConfiguration()
 	if cfgFile != "" { // enable ability to specify config file via flag
 		viper.SetConfigFile(cfgFile)
 	}
 
 	viper.SetConfigName("wac") // name of config file (without extension)
-	viper.AddConfigPath("$HOME/.config/wac")
+	viper.AddConfigPath(util.GetDefaultLocation())
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	} else {
+	if err := viper.ReadInConfig(); err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 }
