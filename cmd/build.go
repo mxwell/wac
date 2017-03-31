@@ -104,6 +104,9 @@ var buildCmd = &cobra.Command{
 			fmt.Printf("ERROR build method '%s' not found in config\n", methodName)
 			return
 		}
+		if len(OutputName) == 0 {
+			OutputName = viper.GetString("solution_name")
+		}
 		input, err := getInput(method)
 		if err != nil {
 			fmt.Printf("ERROR bad input: %s", err)
@@ -138,7 +141,7 @@ var buildCmd = &cobra.Command{
 }
 
 func init() {
-	buildCmd.Flags().StringVarP(&InputName, "input", "i", "main.*", "Build input file (main.* by default)")
-	buildCmd.Flags().StringVarP(&OutputName, "output", "o", "main", "Build output file (main by default)")
+	buildCmd.Flags().StringVarP(&InputName, "input", "i", "main.*", "Build input file")
+	buildCmd.Flags().StringVarP(&OutputName, "output", "o", "", "Build output file (default is set by config as solution_name)")
 	RootCmd.AddCommand(buildCmd)
 }

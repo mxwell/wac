@@ -32,15 +32,32 @@ import (
 	"github.com/spf13/viper"
 )
 
+type ExecMethod struct {
+	command string
+}
+
 type Outcome struct {
 	exec_time      time.Duration
 	output_differs bool
 }
 
-var SolutionCommand string
+var ExecMethodByName = map[string]*ExecMethod{}
+var ExecMethodName string
+var TheMethod *ExecMethod
+var SolutionName string
+
+func readExecConfig() {
+	methods := viper.GetStringMap("exec_methods")
+	for name, _ := range methods {
+		subtree := viper.Sub("exec_methods." + name)
+		command := subtree.GetString("command")
+		ExecMethodByName[name] = &ExecMethod{command}
+	}
+}
 
 func getSolutionCommand() *exec.Cmd {
-	tokens := strings.Split(SolutionCommand, " ")
+	commandLine := strings.Replace(TheMethod.command, "$OUTPUT", SolutionName, -1)
+	tokens := strings.Split(commandLine, " ")
 	if len(tokens) == 1 {
 		return exec.Command(tokens[0])
 	} else if len(tokens) > 1 {
@@ -162,8 +179,16 @@ var runCmd = &cobra.Command{
 Set of test cases could be specified in command arguments as test tokens separated by spaces.
 If no arguments are given, then all available tests are used.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(SolutionCommand) == 0 {
-			SolutionCommand = viper.GetString("solution_name")
+		readExecConfig()
+		if len(ExecMethodName) == 0 {
+			ExecMethodName = viper.GetString("default_exec_method")
+		}
+		var ok bool
+		if TheMethod, ok = ExecMethodByName[ExecMethodName]; !ok {
+			log.Fatalf("ERROR exec method '%s' not found in config\n", ExecMethodName)
+		}
+		if len(SolutionName) == 0 {
+			SolutionName = viper.GetString("solution_name")
 		}
 		contest, err := model.LocateContest()
 		if err != nil {
@@ -205,6 +230,7 @@ If no arguments are given, then all available tests are used.`,
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&SolutionCommand, "command", "c", "", "Command to execute solution (default is to set by config)")
+	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name (default is set by config as default_exec_method)")
+	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name (default is set by config as solution_name)")
 	RootCmd.AddCommand(runCmd)
 }
