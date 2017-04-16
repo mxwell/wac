@@ -45,6 +45,7 @@ var ExecMethodByName = map[string]*ExecMethod{}
 var ExecMethodName string
 var TheMethod *ExecMethod
 var SolutionName string
+var UseStdStreams bool
 
 func readExecConfig() {
 	methods := viper.GetStringMap("RunMethods")
@@ -68,25 +69,33 @@ func getSolutionCommand() *exec.Cmd {
 }
 
 func doRun(inputPath string, resultPath string) (error, time.Duration) {
-	inputReader, err := os.Open(inputPath)
-	if err != nil {
-		return fmt.Errorf("failed to open test input: %s", err), 0
-	}
-	defer inputReader.Close()
-	resultWriter, err := os.OpenFile(resultPath, os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		return fmt.Errorf("failed to open file to write output: %s", err), 0
-	}
-	defer resultWriter.Close()
 	var stderr bytes.Buffer
 
 	command := getSolutionCommand()
-	command.Stdin = inputReader
-	command.Stdout = resultWriter
+	if len(inputPath) > 0 {
+		inputReader, err := os.Open(inputPath)
+		if err != nil {
+			return fmt.Errorf("failed to open test input: %s", err), 0
+		}
+		defer inputReader.Close()
+		command.Stdin = inputReader
+	} else {
+		command.Stdin = os.Stdin
+	}
+	if len(resultPath) > 0 {
+		resultWriter, err := os.OpenFile(resultPath, os.O_RDWR|os.O_CREATE, 0666)
+		if err != nil {
+			return fmt.Errorf("failed to open file to write output: %s", err), 0
+		}
+		defer resultWriter.Close()
+		command.Stdout = resultWriter
+	} else {
+		command.Stdout = os.Stdout
+	}
 	command.Stderr = &stderr
 
 	start := time.Now()
-	err = command.Run()
+	err := command.Run()
 	elapsed := time.Since(start)
 
 	if stderr.Len() > 0 {
@@ -202,14 +211,32 @@ If no arguments are given, then all available tests are used.`,
 		if !ok {
 			log.Fatalf("ERROR contest have no task for the working directory")
 		}
+		if UseStdStreams {
+			if len(args) > 0 {
+				log.Fatalf("ERROR test tokens are now allowed when stdin/stdout are used")
+			}
+			err, _ := doRun("", "")
+			if err != nil {
+				log.Fatalf("ERROR failed to run solution: %s", err)
+			}
+			return
+		}
 		if len(task.TestTokens) == 0 {
 			fmt.Println("No tests.")
 			return
 		}
-		for _, testToken := range task.TestTokens {
-			if len(args) > 0 && !util.ContainsString(&args, testToken) {
-				continue
+		for _, testToken := range args {
+			if !util.ContainsString(&task.TestTokens, testToken) {
+				log.Fatalf("ERROR test with token '%s' not found", testToken)
 			}
+		}
+		var selection *[]string
+		if len(args) > 0 {
+			selection = &args
+		} else {
+			selection = &task.TestTokens
+		}
+		for _, testToken := range *selection {
 			fmt.Printf("[%s] ... ", testToken)
 			outc, err := runSingleTest(filepath.Join(contest.RootDir, taskToken), testToken)
 			if err != nil {
@@ -231,6 +258,7 @@ If no arguments are given, then all available tests are used.`,
 
 func init() {
 	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name (default is set by config as DefaultRunMethod)")
-	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name (default is set by config as SolutionName)")
+	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name, e.g. 'main' (default is set by config as SolutionName)")
+	runCmd.Flags().BoolVarP(&UseStdStreams, "interactive", "i", false, "Interactive mode: use stdin and stdout instead of files")
 	RootCmd.AddCommand(runCmd)
 }
