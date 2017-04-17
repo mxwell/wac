@@ -1,13 +1,19 @@
 package atcoder
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/headzoo/surf/jar"
 	"github.com/mxwell/wac/model"
+	"golang.org/x/crypto/ssh/terminal"
+	"gopkg.in/headzoo/surf.v1"
 )
 
 type AtCoder struct {
@@ -17,17 +23,17 @@ func InitAtCoder() model.Platform {
 	return AtCoder{}
 }
 
-func (a AtCoder) ValidUrl(url string) bool {
-	_, err := trimUrl(url)
+func (a AtCoder) ValidUrl(link string) bool {
+	_, err := trimUrl(link)
 	return err == nil
 }
 
-func (a AtCoder) GetContest(url string, rootDirName string) (*model.Contest, error) {
-	url, err := trimUrl(url)
+func (a AtCoder) GetContest(link string, rootDirName string) (*model.Contest, error) {
+	link, err := trimUrl(link)
 	if err != nil {
 		return nil, err
 	}
-	doc, err := goquery.NewDocument(url + "/assignments")
+	doc, err := retrieveDocument(link + "/assignments")
 	if err != nil {
 		return nil, err
 	}
@@ -65,9 +71,9 @@ func (a AtCoder) GetContest(url string, rootDirName string) (*model.Contest, err
 			return
 		}
 		name := nameElement.Text()
-		tasks[token] = model.Task{url + href, name, token, make([]string, 0)}
+		tasks[token] = model.Task{link + href, name, token, make([]string, 0)}
 	})
-	return &model.Contest{url, title, tasks, rootDirName}, nil
+	return &model.Contest{link, title, tasks, rootDirName}, nil
 }
 
 func contains(arr *[]int, value int) bool {
@@ -80,7 +86,7 @@ func contains(arr *[]int, value int) bool {
 }
 
 func (a AtCoder) GetTests(task *model.Task) ([]model.Test, error) {
-	doc, err := goquery.NewDocument(task.Link)
+	doc, err := retrieveDocument(task.Link)
 	if err != nil {
 		return nil, err
 	}
@@ -152,21 +158,88 @@ func (a AtCoder) GetTests(task *model.Task) ([]model.Test, error) {
 const SchemeHttp = "http://"
 const SchemeHttps = "https://"
 
-func trimUrl(url string) (string, error) {
+func trimUrl(link string) (string, error) {
 	var offset int
-	if strings.HasPrefix(url, SchemeHttp) {
+	if strings.HasPrefix(link, SchemeHttp) {
 		offset = len(SchemeHttp)
-	} else if strings.HasPrefix(url, SchemeHttps) {
+	} else if strings.HasPrefix(link, SchemeHttps) {
 		offset = len(SchemeHttps)
 	} else {
-		return "", fmt.Errorf("no valid scheme is detected in url - %s", url)
+		return "", fmt.Errorf("no valid scheme is detected in url - %s", link)
 	}
-	slash := strings.Index(url[offset:], "/")
+	slash := strings.Index(link[offset:], "/")
 	if slash >= 0 {
-		url = url[:offset+slash]
+		link = link[:offset+slash]
 	}
-	if !strings.HasSuffix(url[offset:], ".contest.atcoder.jp") {
+	if !strings.HasSuffix(link[offset:], ".contest.atcoder.jp") {
 		return "", fmt.Errorf("bad contest URL")
 	}
-	return url, nil
+	return link, nil
+}
+
+type Credentials struct {
+	name     string
+	password string
+}
+
+func getCredentials() (*Credentials, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter AtCoder name: ")
+	name, _ := reader.ReadString('\n')
+
+	fmt.Print("Enter AtCoder password: ")
+	buffer, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return nil, fmt.Errorf("failed to read password: %s", err)
+	}
+	password := string(buffer)
+
+	name = strings.TrimSpace(name)
+	password = strings.TrimSpace(password)
+
+	return &Credentials{name, password}, nil
+}
+
+func retrieveDocument(link string) (*goquery.Selection, error) {
+	base, err := trimUrl(link)
+	if err != nil {
+		return nil, err
+	}
+	loginLink := base + "/login"
+	cred, err := getCredentials()
+	if err != nil {
+		return nil, err
+	}
+
+	bow := surf.NewBrowser()
+	cookieJar := jar.NewMemoryCookies()
+	bow.SetCookieJar(cookieJar)
+	err = bow.Open(loginLink)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch login page - %s: %s", loginLink, err)
+	}
+	fm, _ := bow.Form("form.form-horizontal")
+	fm.Input("name", cred.name)
+	fm.Input("password", cred.password)
+	err = fm.Submit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit login form at %s: %s", loginLink, err)
+	}
+
+	privilege := ""
+	for _, cookie := range cookieJar.Cookies(bow.Url()) {
+		if cookie.Name == "__privilege" {
+			privilege = cookie.Value
+		}
+	}
+	if len(privilege) == 0 {
+		return nil, fmt.Errorf("failed to gain privilege after login")
+	}
+
+	err = bow.Open(link)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch requested page - %s: %s", link, err)
+	}
+	return bow.Dom(), nil
 }
