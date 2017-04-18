@@ -32,6 +32,7 @@ var ExecMethodName string
 var TheMethod *ExecMethod
 var SolutionName string
 var UseStdStreams bool
+var KeepGoing bool
 
 func readExecConfig() {
 	methods := viper.GetStringMap("RunMethods")
@@ -233,7 +234,7 @@ var runCmd = &cobra.Command{
 				msg = "Ok"
 			}
 			fmt.Printf("%s -- %dms\n", msg, int(outc.exec_time/1000000))
-			if outc.output_differs {
+			if outc.output_differs && !KeepGoing {
 				break
 			}
 		}
@@ -244,5 +245,6 @@ func init() {
 	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name, like gcc (default is set in config under DefaultRunMethod)")
 	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name, like 'main' (default is set in config under SolutionName)")
 	runCmd.Flags().BoolVarP(&UseStdStreams, "interactive", "i", false, "Interactive mode: use stdin and stdout instead of files")
+	runCmd.Flags().BoolVarP(&KeepGoing, "keep-going", "k", false, "Keep going when some tests fail")
 	RootCmd.AddCommand(runCmd)
 }
