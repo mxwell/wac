@@ -51,7 +51,7 @@ func initConfiguration() *Configuration {
 		BuildMethods: map[string]BuildMethodRaw{
 			"gcc": BuildMethodRaw{
 				"c++11",
-				"g++ --std=c++11 -pedantic -Wshadow -Wformat=2 -Wfloat-equal -Wconversion -Wlogical-op -fwhole-program -g -fsanitize=address -fstack-protector -Wall -Werror -Wextra  $INPUT -o $OUTPUT",
+				"g++ --std=c++11 -pedantic -Wshadow -Wformat=2 -Wfloat-equal -Wconversion -Wlogical-op -fwhole-program -g -fsanitize=address -fstack-protector -Wall -Werror -Wextra $INPUT -o $OUTPUT",
 			},
 			"gcc_fast": BuildMethodRaw{
 				"c++11",
