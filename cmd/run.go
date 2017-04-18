@@ -1,17 +1,3 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
@@ -182,11 +168,9 @@ func runSingleTest(taskDir string, testToken string) (*Outcome, error) {
 }
 
 var runCmd = &cobra.Command{
-	Use:   "run [test tokens]",
+	Use:   "run [TOKEN1 TOKEN2 ...]",
 	Short: "Run built solution on test cases",
-	Long: `Run built solution on test cases until an error happens or force to go on through all test cases.
-Set of test cases could be specified in command arguments as test tokens separated by spaces.
-If no arguments are given, then all available tests are used.`,
+	Long: `Run built solution on test cases. Set and order of test cases could be specified in command arguments as test tokens separated by spaces. If no arguments are given, then all available tests are used.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readExecConfig()
 		if len(ExecMethodName) == 0 {
@@ -257,8 +241,8 @@ If no arguments are given, then all available tests are used.`,
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name (default is set by config as DefaultRunMethod)")
-	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name, e.g. 'main' (default is set by config as SolutionName)")
+	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name, like gcc (default is set in config under DefaultRunMethod)")
+	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name, like 'main' (default is set in config under SolutionName)")
 	runCmd.Flags().BoolVarP(&UseStdStreams, "interactive", "i", false, "Interactive mode: use stdin and stdout instead of files")
 	RootCmd.AddCommand(runCmd)
 }

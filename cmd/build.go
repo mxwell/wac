@@ -1,17 +1,3 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
@@ -90,9 +76,9 @@ func getCommand(method *BuildMethod, input, output string) *exec.Cmd {
 }
 
 var buildCmd = &cobra.Command{
-	Use:   "build [build method]",
+	Use:   "build [BUILD_METHOD]",
 	Short: "Build solution",
-	Long:  `Build solution from a source file into an executable using [build method], if applicable`,
+	Long:  `Build solution from a source file into an executable using BUILD_METHOD, if applicable. Default build method is set in config under DefaultBuildMethod.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readConfig()
 		methodName := viper.GetString("DefaultBuildMethod")
@@ -142,6 +128,6 @@ var buildCmd = &cobra.Command{
 
 func init() {
 	buildCmd.Flags().StringVarP(&InputName, "input", "i", "main.*", "Build input file")
-	buildCmd.Flags().StringVarP(&OutputName, "output", "o", "", "Build output file (default is set by config as SolutionName)")
+	buildCmd.Flags().StringVarP(&OutputName, "output", "o", "", "Build output file (default is set in config under SolutionName)")
 	RootCmd.AddCommand(buildCmd)
 }

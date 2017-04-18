@@ -1,17 +1,3 @@
-// Copyright © 2017 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
@@ -69,9 +55,9 @@ func initContestDirectory(contest *model.Contest) error {
 var initCmd = &cobra.Command{
 	Use:   "init URL [DIRECTORY]",
 	Short: "Initialize contest in directory",
-	Long: `Initialize DIRECTORY with metadata of a contest at URL.
-Current directory if DIRECTORY is not specified.
-Directory is created if it doesn't exist.`,
+	Long: `Initialize DIRECTORY with metadata of the contest specified by URL. Current directory is used when DIRECTORY is omitted. Non-existing directory will be created.
+
+URLs of regular Codeforces rounds are supported.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 || len(args) > 2 {
 			fmt.Printf("wrong number of arguments - %d\n", len(args))
