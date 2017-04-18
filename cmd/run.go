@@ -300,7 +300,7 @@ var runCmd = &cobra.Command{
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name, like gcc (default is set in config under DefaultRunMethod)")
+	runCmd.Flags().StringVarP(&ExecMethodName, "with", "w", "", "Execution method name, like elf (default is set in config under DefaultRunMethod)")
 	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name, like 'main' (default is set in config under SolutionName)")
 	runCmd.Flags().BoolVarP(&UseStdStreams, "interactive", "i", false, "Interactive mode: use stdin and stdout instead of files")
 	runCmd.Flags().BoolVarP(&KeepGoing, "keep-going", "k", false, "Keep going when some tests fail")

@@ -64,11 +64,10 @@ func initConfiguration() *Configuration {
 		},
 		DefaultBuildMethod: "gcc",
 		RunMethods: map[string]ExecMethod{
-			"gcc":     ExecMethod{"./$OUTPUT"},
-			"ocaml":   ExecMethod{"./$OUTPUT"},
+			"elf":     ExecMethod{"./$OUTPUT"},
 			"python3": ExecMethod{"python3 $OUTPUT.py"},
 		},
-		DefaultRunMethod: "gcc",
+		DefaultRunMethod: "elf",
 	}
 	return conf
 }
