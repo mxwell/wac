@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -33,6 +34,7 @@ var TheMethod *ExecMethod
 var SolutionName string
 var UseStdStreams bool
 var KeepGoing bool
+var BeSilent bool
 
 func readExecConfig() {
 	methods := viper.GetStringMap("RunMethods")
@@ -150,6 +152,14 @@ func checkOutput(expectedPath string, resultPath string) (bool, error) {
 	return false, nil
 }
 
+func printFile(path string) error {
+	b, err := ioutil.ReadFile(path)
+	if err == nil {
+		fmt.Printf("%s", b)
+	}
+	return err
+}
+
 func runSingleTest(taskDir string, testToken string) (*Outcome, error) {
 	testPathPrefix := filepath.Join(taskDir, testToken)
 	inputPath := testPathPrefix + ".in"
@@ -164,6 +174,19 @@ func runSingleTest(taskDir string, testToken string) (*Outcome, error) {
 	diff, err := checkOutput(outputPath, resultPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check output: %s", err)
+	}
+	if diff && !BeSilent {
+		fmt.Printf("\n== EXPECTED ==\n")
+		err = printFile(outputPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report difference: %s", err)
+		}
+		fmt.Printf("\n== RESULT ==\n")
+		err = printFile(resultPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to report difference: %s", err)
+		}
+		fmt.Printf("\n============\n")
 	}
 	return &Outcome{elapsed, diff}, nil
 }
@@ -246,5 +269,6 @@ func init() {
 	runCmd.Flags().StringVarP(&SolutionName, "solution", "s", "", "Built solution name, like 'main' (default is set in config under SolutionName)")
 	runCmd.Flags().BoolVarP(&UseStdStreams, "interactive", "i", false, "Interactive mode: use stdin and stdout instead of files")
 	runCmd.Flags().BoolVarP(&KeepGoing, "keep-going", "k", false, "Keep going when some tests fail")
+	runCmd.Flags().BoolVarP(&BeSilent, "quiet", "q", false, "Do not show differences found in output")
 	RootCmd.AddCommand(runCmd)
 }
