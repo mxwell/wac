@@ -61,16 +61,12 @@ func initConfiguration() *Configuration {
 				"ocaml",
 				"ocamlopt $INPUT -o $OUTPUT",
 			},
-			"python3": BuildMethodRaw{
-				"python3",
-				"cp $INPUT $OUTPUT",
-			},
 		},
 		DefaultBuildMethod: "gcc",
 		RunMethods: map[string]ExecMethod{
 			"gcc":     ExecMethod{"./$OUTPUT"},
 			"ocaml":   ExecMethod{"./$OUTPUT"},
-			"python3": ExecMethod{"python3 $OUTPUT"},
+			"python3": ExecMethod{"python3 $OUTPUT.py"},
 		},
 		DefaultRunMethod: "gcc",
 	}
@@ -97,7 +93,8 @@ var OCAML_TEMPLATE = `open Printf
 let () =
   (* solution comes here *)`
 
-var PY3_TEMPLATE = `import sys
+var PYTHON3_TEMPLATE = `#! /usr/bin/env python3
+import sys
 
 
 def main():
@@ -116,7 +113,7 @@ func saveTemplates(dir string) error {
 	if err != nil {
 		return err
 	}
-	err = createIfNotPresent(filepath.Join(dir, "py3.py"), []byte(PY3_TEMPLATE))
+	err = createIfNotPresent(filepath.Join(dir, "python3.py"), []byte(PYTHON3_TEMPLATE))
 	if err != nil {
 		return err
 	}
