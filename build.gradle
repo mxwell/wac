@@ -1,0 +1,27 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "com.netflix.nebula:gradle-ospackage-plugin:4.4.0"
+  }
+}
+
+project.version = "0.1"
+
+apply plugin: "nebula.ospackage"
+apply plugin: "nebula.deb"
+
+ospackage {
+  arch "all"
+  summary = "Contestant helper"
+  packageDescription = "WAC is a CLI tool that helps contestants of programming contests to write, build and test code of solutions."
+  packageGroup = "misc"
+
+  maintainer = "Murat Khairulin <chertanla@yahoo.com>"
+  release = "1"
+
+  from("wac") {
+    into file("/usr/bin")
+  }
+}
