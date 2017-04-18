@@ -50,11 +50,11 @@ func initConfiguration() *Configuration {
 		BuildMethods: map[string]BuildMethodRaw{
 			"gcc": BuildMethodRaw{
 				"c++11",
-				"g++ --std=c++11 -pedantic -Wshadow -Wformat=2 -Wfloat-equal -Wconversion -Wlogical-op -fwhole-program -fsanitize=address -fstack-protector -Wall -Werror -Wextra -o $OUTPUT $INPUT",
+				"g++ --std=c++11 -pedantic -Wshadow -Wformat=2 -Wfloat-equal -Wconversion -Wlogical-op -fwhole-program -g -fsanitize=address -fstack-protector -Wall -Werror -Wextra  $INPUT -o $OUTPUT",
 			},
 			"gcc_fast": BuildMethodRaw{
 				"c++11",
-				"g++ --std=c++11 -o $OUTPUT $INPUT",
+				"g++ --std=c++11 -O2 -Wall $INPUT -o $OUTPUT",
 			},
 			"python3": BuildMethodRaw{
 				"python3",
@@ -83,7 +83,7 @@ var GCC_TEMPLATE = `#include <bits/stdc++.h>
 using namespace std;
 
 int main() {
-  return 0;
+  // solution comes here
 }`
 
 var PY3_TEMPLATE = `import sys
