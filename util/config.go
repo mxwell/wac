@@ -94,15 +94,14 @@ let () =
   (* solution comes here *)`
 
 var PYTHON3_TEMPLATE = `#! /usr/bin/env python3
-import sys
 
 
 def main():
-  return 0
+  # solution comes here
 
 
 if __name__ == "__main__":
-  sys.exit(main())`
+  main()`
 
 func saveTemplates(dir string) error {
 	err := createIfNotPresent(filepath.Join(dir, "gcc.cpp"), []byte(GCC_TEMPLATE))
