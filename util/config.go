@@ -45,6 +45,7 @@ func initConfiguration() *Configuration {
 		SolutionName:    "main",
 		Extensions: map[string]string{
 			"c++11":   "cpp",
+			"ocaml":   "ml",
 			"python3": "py",
 		},
 		BuildMethods: map[string]BuildMethodRaw{
@@ -56,6 +57,10 @@ func initConfiguration() *Configuration {
 				"c++11",
 				"g++ --std=c++11 -O2 -Wall $INPUT -o $OUTPUT",
 			},
+			"ocaml": BuildMethodRaw{
+				"ocaml",
+				"ocamlopt $INPUT -o $OUTPUT",
+			},
 			"python3": BuildMethodRaw{
 				"python3",
 				"cp $INPUT $OUTPUT",
@@ -64,6 +69,7 @@ func initConfiguration() *Configuration {
 		DefaultBuildMethod: "gcc",
 		RunMethods: map[string]ExecMethod{
 			"gcc":     ExecMethod{"./$OUTPUT"},
+			"ocaml":   ExecMethod{"./$OUTPUT"},
 			"python3": ExecMethod{"python3 $OUTPUT"},
 		},
 		DefaultRunMethod: "gcc",
@@ -86,6 +92,11 @@ int main() {
   // solution comes here
 }`
 
+var OCAML_TEMPLATE = `open Printf
+
+let () =
+  (* solution comes here *)`
+
 var PY3_TEMPLATE = `import sys
 
 
@@ -98,6 +109,10 @@ if __name__ == "__main__":
 
 func saveTemplates(dir string) error {
 	err := createIfNotPresent(filepath.Join(dir, "gcc.cpp"), []byte(GCC_TEMPLATE))
+	if err != nil {
+		return err
+	}
+	err = createIfNotPresent(filepath.Join(dir, "ocaml.ml"), []byte(OCAML_TEMPLATE))
 	if err != nil {
 		return err
 	}
