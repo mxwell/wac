@@ -90,7 +90,7 @@ var Filename string
 var createCmd = &cobra.Command{
 	Use:   "create [TEMPLATE]",
 	Short: "Copy code template into current directory",
-	Long:  `Copy a code template into current directory. Default template is set in config under DefaultTemplate. Template names don't include extensions.
+	Long: `Copy a code template into current directory. Default template is set in config under DefaultTemplate. Template names don't include extensions.
 
 Templates are stored alongside the configuration file.`,
 	Run: func(cmd *cobra.Command, args []string) {

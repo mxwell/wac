@@ -170,7 +170,7 @@ func runSingleTest(taskDir string, testToken string) (*Outcome, error) {
 var runCmd = &cobra.Command{
 	Use:   "run [TOKEN1 TOKEN2 ...]",
 	Short: "Run built solution on test cases",
-	Long: `Run built solution on test cases. Set and order of test cases could be specified in command arguments as test tokens separated by spaces. If no arguments are given, then all available tests are used.`,
+	Long:  `Run built solution on test cases. Set and order of test cases could be specified in command arguments as test tokens separated by spaces. If no arguments are given, then all available tests are used.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		readExecConfig()
 		if len(ExecMethodName) == 0 {
