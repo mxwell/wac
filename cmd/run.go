@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/mxwell/wac/model"
@@ -35,6 +36,8 @@ var SolutionName string
 var UseStdStreams bool
 var KeepGoing bool
 var BeSilent bool
+var StackSize uint64
+var knownStackSize uint64 = 0
 
 func readExecConfig() {
 	methods := viper.GetStringMap("RunMethods")
@@ -55,6 +58,33 @@ func getSolutionCommand() *exec.Cmd {
 	} else {
 		panic("Empty command to run solution!")
 	}
+}
+
+func setStackSize(target uint64) error {
+	if knownStackSize >= target {
+		return nil
+	}
+	var lim syscall.Rlimit
+	err := syscall.Getrlimit(syscall.RLIMIT_STACK, &lim)
+	if err != nil {
+		return fmt.Errorf("failed during getrlimit: %s", err)
+	}
+	if lim.Cur < target {
+		lim.Cur = target
+		err = syscall.Setrlimit(syscall.RLIMIT_STACK, &lim)
+		if err != nil {
+			return fmt.Errorf("failed during setrlimit: %s", err)
+		}
+		err = syscall.Getrlimit(syscall.RLIMIT_STACK, &lim)
+		if err != nil {
+			return fmt.Errorf("failed during getrlimit: %s", err)
+		}
+		if lim.Cur != target {
+			return fmt.Errorf("failed to set requested size: current %d, but %d is requested", lim.Cur, target)
+		}
+	}
+	knownStackSize = lim.Cur
+	return nil
 }
 
 func doRun(inputPath string, resultPath string) (error, time.Duration) {
@@ -83,8 +113,13 @@ func doRun(inputPath string, resultPath string) (error, time.Duration) {
 	}
 	command.Stderr = &stderr
 
+	err := setStackSize(StackSize)
+	if err != nil {
+		return fmt.Errorf("failed to increase stack size: %s", err), 0
+	}
+
 	start := time.Now()
-	err := command.Run()
+	err = command.Run()
 	elapsed := time.Since(start)
 
 	if stderr.Len() > 0 {
@@ -270,5 +305,6 @@ func init() {
 	runCmd.Flags().BoolVarP(&UseStdStreams, "interactive", "i", false, "Interactive mode: use stdin and stdout instead of files")
 	runCmd.Flags().BoolVarP(&KeepGoing, "keep-going", "k", false, "Keep going when some tests fail")
 	runCmd.Flags().BoolVarP(&BeSilent, "quiet", "q", false, "Do not show differences found in output")
+	runCmd.Flags().Uint64VarP(&StackSize, "stack", "", 256*1024*1024, "Stack size in bytes")
 	RootCmd.AddCommand(runCmd)
 }
