@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/mxwell/wac/util"
@@ -27,6 +28,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	log.SetFlags(0)
 }
 
 // initConfig reads in config file and ENV variables if set.
