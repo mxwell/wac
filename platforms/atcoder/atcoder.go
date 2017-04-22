@@ -237,9 +237,16 @@ func retrieveDocument(link string) (*goquery.Selection, error) {
 		return nil, fmt.Errorf("failed to gain privilege after login")
 	}
 
+	joinLink := base + "/participants/insert"
+	err = bow.Open(joinLink)
+	if err != nil {
+		return nil, fmt.Errorf("failed to join the contest by link %s: %s", joinLink, err)
+	}
+
 	err = bow.Open(link)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch requested page - %s: %s", link, err)
 	}
+
 	return bow.Dom(), nil
 }
