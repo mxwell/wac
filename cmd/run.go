@@ -102,7 +102,7 @@ func doRun(inputPath string, resultPath string) (error, time.Duration) {
 		command.Stdin = os.Stdin
 	}
 	if len(resultPath) > 0 {
-		resultWriter, err := os.OpenFile(resultPath, os.O_RDWR|os.O_CREATE, 0666)
+		resultWriter, err := os.OpenFile(resultPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
 			return fmt.Errorf("failed to open file to write output: %s", err), 0
 		}
